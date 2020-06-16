@@ -49,12 +49,13 @@ module Bundler
       # All actions required by the Git source is encapsulated in this
       # object.
       class GitProxy
-        attr_accessor :path, :uri, :ref
+        attr_accessor :path, :uri, :safe_uri, :ref
         attr_writer :revision
 
         def initialize(path, uri, ref, revision = nil, git = nil)
           @path     = path
           @uri      = uri
+          @safe_uri = URICredentialsFilter.credential_filtered_uri(uri)
           @ref      = ref
           @revision = revision
           @git      = git
@@ -227,7 +228,7 @@ module Bundler
 
         def allowed_with_path
           return with_path { yield } if allow?
-          raise GitError, "The git source #{uri} is not yet checked out. Please run `bundle install` before trying to start your application"
+          raise GitError, "The git source #{safe_uri} is not yet checked out. Please run `bundle install` before trying to start your application"
         end
 
         def check_allowed(command)
